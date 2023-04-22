@@ -1,0 +1,13 @@
+name: Capture_The_Flag
+author: GalaGala
+version: 1.0
+description: Amazing CTF battle plugin
+main: Main
+api-version: 1.14
+commands:
+  ctfcreate:
+    permission: ctf.create
+    description: Start to create a CTF
+  ctfstart:
+    permission: ctf.create
+    description: Start a CTF game
