@@ -3,6 +3,7 @@ package listeners;
 
 import entity.Flag;
 import entity.Spawn;
+import messages.StickMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,7 +17,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -32,11 +32,11 @@ import static util.Utils.PLUGIN_PREFIX;
 
 public class StickListener implements Listener {
 
-    private File pluginFolder;
+    private final File pluginFolder;
 
-    private Plugin plugin;
+    private final Plugin plugin;
 
-    private PluginManager pluginManager;
+    private final PluginManager pluginManager;
 
     private boolean isEventLocked = false;
 
@@ -57,7 +57,6 @@ public class StickListener implements Listener {
         Location blockLocation = event.getClickedBlock().getLocation();
 
         if (item.getType() == Material.STICK && item.getItemMeta().getDisplayName().equals("§cCTF Stick") && blockLocation != null) {
-            EquipmentSlot equipmentSlot = event.getHand();
             if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
                 isEventLocked = true;
                 Flag flag = new Flag();
@@ -66,14 +65,14 @@ public class StickListener implements Listener {
                 flag.setZ(blockLocation.getBlockZ());
                 flag.setWorld(player.getWorld());
 
-                player.sendMessage(PLUGIN_PREFIX + " Please choose team color: §cred§f or §3blue§f. Type in the chat your answer. If you want to cancel type §ccancel§f.");
+                player.sendMessage(StickMessage.getChooseTeamColorMessage());
                 event.setCancelled(true);
 
                 this.selectTeam(player, flag);
             }
             if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
                 isEventLocked = true;
-                player.sendMessage(PLUGIN_PREFIX + " Please define a spawn point. Begin with §cred§f team. Click on a block with the stick.");
+                player.sendMessage(StickMessage.getSelectRedSpawnPointMessage());
                 event.setCancelled(true);
 
                 Spawn spawn = new Spawn();
@@ -92,7 +91,7 @@ public class StickListener implements Listener {
                     spawn.setXRedSpawn(blockLocation.getBlockX());
                     spawn.setYRedSpawn(blockLocation.getBlockY() + 1);
                     spawn.setZRedSpawn(blockLocation.getBlockZ());
-                    player.sendMessage(PLUGIN_PREFIX + " Done. Now set spawn point for §3blue§f team. Click on a block with the stick.");
+                    player.sendMessage(StickMessage.getSelectBlueSpawnPointMessage());
                     event.setCancelled(true);
                     HandlerList.unregisterAll(this);
                     selectSpawnPoint(TeamColors.BLUE_TEAM, player, spawn);
@@ -100,7 +99,7 @@ public class StickListener implements Listener {
                     spawn.setXBlueSpawn(blockLocation.getBlockX());
                     spawn.setYBlueSpawn(blockLocation.getBlockY() + 1);
                     spawn.setZBlueSpawn(blockLocation.getBlockZ());
-                    player.sendMessage(PLUGIN_PREFIX + " Done.");
+                    player.sendMessage(StickMessage.getDoneMessage());
                     HandlerList.unregisterAll(this);
                     saveSpawn(spawn);
                     event.setCancelled(true);
@@ -118,23 +117,23 @@ public class StickListener implements Listener {
                     String message = event.getMessage().toLowerCase();
                     if (message.equalsIgnoreCase(TeamColors.BLUE_TEAM.getColor())) {
                         flag.setColors(TeamColors.BLUE_TEAM);
-                        player.sendMessage(PLUGIN_PREFIX + " You choose §3blue§f.");
+                        player.sendMessage(StickMessage.getChooseBlueMessage());
                         event.setCancelled(true);
                         HandlerList.unregisterAll(this);
                         selectName(player,flag);
                     }else if (message.equalsIgnoreCase(TeamColors.RED_TEAM.getColor())) {
                         flag.setColors(TeamColors.RED_TEAM);
-                        player.sendMessage(PLUGIN_PREFIX + " You choose §cred§f.");
+                        player.sendMessage(StickMessage.getChooseRedMessage());
                         event.setCancelled(true);
                         HandlerList.unregisterAll(this);
                         selectName(player, flag);
                     }else if (message.equalsIgnoreCase("cancel")){
-                            player.sendMessage(PLUGIN_PREFIX + " You cancel the flag creation.");
+                            player.sendMessage(StickMessage.getCancelFlagCreationMessage());
                             event.setCancelled(true);
                             HandlerList.unregisterAll(this);
                             isEventLocked = false;
                     }else {
-                        player.sendMessage(PLUGIN_PREFIX + " Invalid team color. Please choose §cred§f or §3blue§f.");
+                        player.sendMessage(StickMessage.getErrorTypeMessage());
                         event.setCancelled(true);
                     }
                 }
@@ -143,14 +142,14 @@ public class StickListener implements Listener {
     }
 
    private void selectName(Player player, Flag flag){
-        player.sendMessage(PLUGIN_PREFIX + " Please choose a name for this flag. Type your answer in the chat.");
+        player.sendMessage(StickMessage.getSelectNameMessage());
         pluginManager.registerEvents(new Listener() {
             @EventHandler
             public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
                 if (event.getPlayer().equals(player)) {
                     String message = event.getMessage().toLowerCase();
                     flag.setName(message);
-                    player.sendMessage(PLUGIN_PREFIX + " You choose this name: §a" + message + "§f.");
+                    player.sendMessage(StickMessage.getConfirmNameMessage(message));
 
                     event.setCancelled(true);
                     HandlerList.unregisterAll(this);

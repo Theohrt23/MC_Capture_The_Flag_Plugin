@@ -1,5 +1,6 @@
 package listeners;
 
+import messages.FlagCaptureMessage;
 import org.bukkit.*;
 import org.bukkit.event.Listener;
 
@@ -10,6 +11,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import entity.Flag;
 import org.bukkit.plugin.Plugin;
 import util.TeamColors;
+import util.Utils;
 
 public class FlagCapture implements Listener {
 
@@ -22,11 +24,12 @@ public class FlagCapture implements Listener {
     private TeamColors capturingTeam = null;
     private boolean isCapturing = false;
     private int captureTime = 0;
-    private int captureTimeRequired = 1800;
+    private final int captureTimeRequired = 100;
 
     public FlagCapture(Flag flag, Plugin plugin) {
         this.flag = flag;
         this.plugin = plugin;
+        Utils.changeFlagColor(plugin,flag);
     }
 
     @EventHandler
@@ -47,7 +50,7 @@ public class FlagCapture implements Listener {
             if (playerTeam != null && playerTeam != flag.getColors()) {
                 if (capturingTeam == null) {
                     capturingTeam = playerTeam;
-                    Bukkit.broadcastMessage(ChatColor.AQUA + "[CAPTURE] " + capturingTeam.name() + ChatColor.WHITE + " begin to capture the flag " + flag.getColors().getColor() + flag.getName());
+                    Bukkit.broadcastMessage(FlagCaptureMessage.getBeginCaptureMessage(capturingTeam,flag));
                     isCapturing = true;
                 } else if (capturingTeam == playerTeam) {
                     numPlayers++;
@@ -56,24 +59,18 @@ public class FlagCapture implements Listener {
                 }
             }
         } else {
-            if (capturingTeam != null) {
-                numPlayers--;
-                if (numPlayers == 0) {
-                    capturingTeam = null;
-                    Bukkit.broadcastMessage(ChatColor.AQUA + "[CAPTURE] The flag capture " + flag.getColors().getColor() + flag.getName() + ChatColor.WHITE + " is stopped");
-                    isCapturing = false;
-                    captureTime = 0;
-                }
-            }
+            verifyIfPlayerCaptureThisFlag();
         }
+    }
 
+    public void checkCapturing() {
         if (isCapturing) {
             captureTime++;
-            int playersMultiplier = (int) (1 + (numPlayers * 0.15));
-            if (captureTime >= captureTimeRequired / playersMultiplier) {
+            System.out.println(captureTime);
+            if (captureTime >= captureTimeRequired) {
                 flag.setColors(capturingTeam);
-                Bukkit.broadcastMessage(ChatColor.AQUA + "[CAPTURE] The flag " + flag.getName() + ChatColor.WHITE + " was capture by " + capturingTeam.getColor() + capturingTeam.name());
-                changeFlagColor(capturingTeam);
+                Bukkit.broadcastMessage(FlagCaptureMessage.getCapturedFlagMessage(capturingTeam,flag));
+                Utils.changeFlagColor(plugin,flag);
                 capturingTeam = null;
                 isCapturing = false;
                 captureTime = 0;
@@ -81,25 +78,15 @@ public class FlagCapture implements Listener {
         }
     }
 
-    public void changeFlagColor(TeamColors teamColors){
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            World world = flag.getWorld();
-
-            Material wool;
-            if (teamColors.equals(TeamColors.RED_TEAM)){
-                wool = Material.RED_WOOL;
-            }else {
-                wool = Material.BLUE_WOOL;
+    private void verifyIfPlayerCaptureThisFlag(){
+        if (capturingTeam != null) {
+            numPlayers--;
+            if (numPlayers == 0) {
+                capturingTeam = null;
+                Bukkit.broadcastMessage(FlagCaptureMessage.getStoppedCaptureMessage(flag));
+                isCapturing = false;
+                captureTime = 0;
             }
-
-            world.getBlockAt(flag.getX()+1, flag.getY()+6, flag.getZ()).setType(wool);
-            world.getBlockAt(flag.getX()+2, flag.getY()+6, flag.getZ()).setType(wool);
-            world.getBlockAt(flag.getX()+3, flag.getY()+6, flag.getZ()).setType(wool);
-            world.getBlockAt(flag.getX()+4, flag.getY()+6, flag.getZ()).setType(wool);
-            world.getBlockAt(flag.getX()+1, flag.getY()+7, flag.getZ()).setType(wool);
-            world.getBlockAt(flag.getX()+2, flag.getY()+7, flag.getZ()).setType(wool);
-            world.getBlockAt(flag.getX()+3, flag.getY()+7, flag.getZ()).setType(wool);
-            world.getBlockAt(flag.getX()+4, flag.getY()+7, flag.getZ()).setType(wool);
-        });
+        }
     }
 }
