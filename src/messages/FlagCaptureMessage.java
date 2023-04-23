@@ -20,6 +20,10 @@ public class FlagCaptureMessage {
         return PLUGIN_PREFIX + ChatColor.AQUA + " The flag capture " + setNameFlagColors(flag.getColors()) + flag.getName() + ChatColor.AQUA + " is stopped.";
     }
 
+    public static String getTimeBeforeEndCaptureMessage(Flag flag, int timeLeft) {
+        return PLUGIN_PREFIX + timeLeft + ChatColor.AQUA + " seconds left before the capture of " + setNameFlagColors(flag.getColors()) + flag.getName() + ChatColor.AQUA + " flag.";
+    }
+
     private static ChatColor setNameFlagColors(TeamColors teamColors){
         if (teamColors.equals(TeamColors.RED_TEAM)){
             return ChatColor.RED;

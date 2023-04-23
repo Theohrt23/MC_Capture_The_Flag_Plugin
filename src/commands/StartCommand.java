@@ -1,9 +1,9 @@
 package commands;
 
-import com.sun.istack.internal.NotNull;
 import entity.Flag;
 import entity.Spawn;
 import listeners.FlagCapture;
+import listeners.UnequipHelmetListener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.*;
+import util.CustomScoreboard;
 import util.ReadYamlFiles;
 import util.TeamColors;
 
@@ -108,8 +108,7 @@ public class StartCommand implements CommandExecutor {
                         flagCapture.checkCapturing();
                     }
 
-                    Score score = player.getScoreboard().getObjective("game").getScore(ChatColor.GREEN + "Minutes left:");
-                    score.setScore(timeLeft / 60);
+                    CustomScoreboard.updateScoreboardTimeLeft(player,timeLeft);
 
                     if(minute_count == 60){
                         for (Flag f : flagList){
@@ -126,11 +125,7 @@ public class StartCommand implements CommandExecutor {
                             }
                         }
 
-                        Score scoreRed = player.getScoreboard().getObjective("game").getScore(ChatColor.RED + "Red points:");
-                        scoreRed.setScore(red_point);
-
-                        Score scoreBlue = player.getScoreboard().getObjective("game").getScore(ChatColor.BLUE + "Blue points:");
-                        scoreBlue.setScore(blue_point);
+                        CustomScoreboard.updateScoreboardTeamsPoint(player, red_point, blue_point);
 
                         if (red_point == 0){
                             Bukkit.broadcastMessage(ChatColor.AQUA + "[CAPTURE] The flag capture was win by " + ChatColor.RED + " RED_TEAM");
@@ -169,39 +164,16 @@ public class StartCommand implements CommandExecutor {
         for (Player p : redTeam) {
             p.teleport(destination);
             p.getInventory().setHelmet(new ItemStack(Material.RED_WOOL));
-            createScoreboard(p);
+            CustomScoreboard.createScoreboard(p,red_point,blue_point,GAME_TIME);
         }
 
         destination = new Location(spawn.getWorld(), spawn.getXBlueSpawn(), spawn.getYBlueSpawn(), spawn.getZBlueSpawn());
         for (Player p : blueTeam) {
             p.teleport(destination);
             p.getInventory().setHelmet(new ItemStack(Material.BLUE_WOOL));
-            createScoreboard(p);
+            CustomScoreboard.createScoreboard(p,red_point,blue_point,GAME_TIME);
         }
-    }
 
-    public void createScoreboard(Player player) {
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        Scoreboard scoreboard = manager.getNewScoreboard();
-
-        Objective obj = scoreboard.registerNewObjective("game", "dummy", ChatColor.YELLOW + "CastleSiege");
-        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        Score killsScore = obj.getScore(ChatColor.YELLOW + "Kills:");
-        killsScore.setScore(0);
-
-        Score deathsScore = obj.getScore(ChatColor.YELLOW + "Deaths:");
-        deathsScore.setScore(0);
-
-        Score scoreRed = obj.getScore(ChatColor.RED + "Red points:");
-        scoreRed.setScore(red_point);
-
-        Score scoreBlue = obj.getScore(ChatColor.BLUE + "Blue points:");
-        scoreBlue.setScore(blue_point);
-
-        Score score = obj.getScore(ChatColor.GREEN + "Minutes left:");
-        score.setScore(GAME_TIME / 60);
-
-        player.setScoreboard(scoreboard);
+        pluginManager.registerEvents(new UnequipHelmetListener(),plugin);
     }
 }

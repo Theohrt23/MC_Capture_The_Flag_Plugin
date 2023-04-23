@@ -10,8 +10,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 import entity.Flag;
 import org.bukkit.plugin.Plugin;
+import util.FlagChange;
 import util.TeamColors;
-import util.Utils;
 
 public class FlagCapture implements Listener {
 
@@ -29,7 +29,7 @@ public class FlagCapture implements Listener {
     public FlagCapture(Flag flag, Plugin plugin) {
         this.flag = flag;
         this.plugin = plugin;
-        Utils.changeFlagColor(plugin,flag);
+        FlagChange.changeFlagColor(plugin,flag);
     }
 
     @EventHandler
@@ -66,11 +66,25 @@ public class FlagCapture implements Listener {
     public void checkCapturing() {
         if (isCapturing) {
             captureTime++;
-            System.out.println(captureTime);
+            if (captureTime == 20 || captureTime == 40 || captureTime == 60 || captureTime == 80){
+                Bukkit.broadcastMessage(FlagCaptureMessage.getTimeBeforeEndCaptureMessage(flag,captureTimeRequired - captureTime));
+                if (captureTime == 20){
+                    FlagChange.changeToFirstFlagState(plugin,flag);
+                }
+                if (captureTime == 40){
+                    FlagChange.changeToSecondFlagState(plugin,flag);
+                }
+                if (captureTime == 60){
+                    FlagChange.changeToThirdFlagState(plugin,flag);
+                }
+                if (captureTime == 80){
+                    FlagChange.changeToFourFlagState(plugin,flag);
+                }
+            }
             if (captureTime >= captureTimeRequired) {
                 flag.setColors(capturingTeam);
                 Bukkit.broadcastMessage(FlagCaptureMessage.getCapturedFlagMessage(capturingTeam,flag));
-                Utils.changeFlagColor(plugin,flag);
+                FlagChange.changeFlagColor(plugin,flag);
                 capturingTeam = null;
                 isCapturing = false;
                 captureTime = 0;
@@ -84,6 +98,7 @@ public class FlagCapture implements Listener {
             if (numPlayers == 0) {
                 capturingTeam = null;
                 Bukkit.broadcastMessage(FlagCaptureMessage.getStoppedCaptureMessage(flag));
+                FlagChange.changeFlagColor(plugin,flag);
                 isCapturing = false;
                 captureTime = 0;
             }
