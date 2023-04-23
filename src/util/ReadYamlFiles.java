@@ -2,7 +2,6 @@ package util;
 
 import entity.Flag;
 import entity.Spawn;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.yaml.snakeyaml.Yaml;
@@ -13,7 +12,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ReadYamlFiles {
 
