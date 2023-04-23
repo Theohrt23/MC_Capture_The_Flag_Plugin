@@ -2,56 +2,47 @@ package util;
 
 import entity.Flag;
 import entity.Spawn;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ReadYamlFiles {
 
     public static List<Flag> getFlagListByWorld(World world, File file) throws FileNotFoundException {
-        InputStream input = new FileInputStream(file);
-        Yaml yaml = new Yaml();
-        Map<String, Map<String, Object>> data = yaml.load(input);
-        List<Flag> flagList = new ArrayList<>();
+        List<Flag> flags = new ArrayList<>();
+        YamlConfiguration flagConfig = YamlConfiguration.loadConfiguration(file);
 
-        for (Map.Entry<String, Map<String, Object>> entry : data.entrySet()) {
-            Map<String, Object> values = entry.getValue();
-            String yamlWorld = values.get("world").toString();
-
-            if (world.getName().equalsIgnoreCase(yamlWorld)) {
-                String name = entry.getKey();
-
-                List<Integer> coordinates = (List<Integer>) values.get("coordinates");
-                int x = coordinates.get(0);
-                int y = coordinates.get(1);
-                int z = coordinates.get(2);
-                String color = ((List<String>) values.get("color")).get(0);
-
-                Flag flag = new Flag();
-
-                flag.setName(name);
-                flag.setWorld(world);
-                flag.setX(x);
-                flag.setY(y);
-                flag.setZ(z);
-
-                if (color.equalsIgnoreCase(TeamColors.RED_TEAM.getColor())) {
-                    flag.setColors(TeamColors.RED_TEAM);
-                } else {
-                    flag.setColors(TeamColors.BLUE_TEAM);
+        for (String flagKey : flagConfig.getKeys(false)) {
+            String[] keyParts = flagKey.split("\\.");
+            String flagName = keyParts[0];
+            String flagWorld = flagConfig.getString(flagKey + ".world");
+            if (flagWorld != null && flagWorld.equals(world.getName())) {
+                List<Integer> coordinates = flagConfig.getIntegerList(flagKey + ".coordinates");
+                String flagColor = flagConfig.getString(flagKey + ".color");
+                TeamColors teamColors;
+                if (flagColor.equals("[Red]")){
+                    teamColors = TeamColors.RED_TEAM;
+                }else {
+                    teamColors = TeamColors.BLUE_TEAM;
                 }
 
-                flagList.add(flag);
+                if (coordinates.size() == 3 && flagColor != null) {
+                    Flag flag = new Flag(flagName, teamColors, world, coordinates.get(0), coordinates.get(1), coordinates.get(2));
+                    flags.add(flag);
+                }
             }
         }
-        return flagList;
+
+        return flags;
     }
 
     public static Spawn getSpawnByWorld(World world, File file) throws FileNotFoundException {

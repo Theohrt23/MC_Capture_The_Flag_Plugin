@@ -17,6 +17,15 @@ public class Flag {
 
     private int Z;
 
+    public Flag(String name, TeamColors colors, World world, int x, int y, int z) {
+        this.name = name;
+        this.colors = colors;
+        this.world = world;
+        X = x;
+        Y = y;
+        Z = z;
+    }
+
     public Flag(){}
 
     public String getName() {

@@ -16,7 +16,6 @@ public class Main extends JavaPlugin {
         System.out.println(PLUGIN_NAME + " loaded");
         this.initializeCommands();
         this.initializeEvents();
-        this.getServer().getPluginManager().registerEvents(new StickListener(getPluginFolder(),this), this);
     }
 
     @Override

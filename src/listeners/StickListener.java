@@ -216,9 +216,9 @@ public class StickListener implements Listener {
         List<String> colors = new ArrayList<>();
         colors.add(flag.getColors().getColor());
 
-        flagConfig.set(String.format("%s.%s.world", flagName, worldName), worldName);
-        flagConfig.set(String.format("%s.%s.coordinates", flagName, worldName), coordinates);
-        flagConfig.set(String.format("%s.%s.color", flagName, worldName), colors);
+        flagConfig.set(String.format("%s.world", flagName), worldName);
+        flagConfig.set(String.format("%s.coordinates", flagName), coordinates);
+        flagConfig.set(String.format("%s.color", flagName), colors);
 
         try {
             flagConfig.save(locationFile);

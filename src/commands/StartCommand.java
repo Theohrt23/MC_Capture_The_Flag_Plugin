@@ -54,13 +54,17 @@ public class StartCommand implements CommandExecutor {
                 throw new RuntimeException(e);
             }
 
+
             try {
                 spawn = ReadYamlFiles.getSpawnByWorld(player.getWorld(), new File(this.pluginFolder, "spawn_location.yml"));
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
 
-            pluginManager.registerEvents(new FlagCapture(), plugin);
+            for (Flag flag : flagList){
+                System.out.println("initialize flag " + flag.getName() + " on " + flag.getWorld().getName() + " at " + flag.getX() + flag.getY() + flag.getZ() + " for the " + flag.getColors() + " team.");
+                pluginManager.registerEvents(new FlagCapture(flag,plugin), plugin);
+            }
 
             new BukkitRunnable() {
                 int count = COUNTDOWN_TIME;
