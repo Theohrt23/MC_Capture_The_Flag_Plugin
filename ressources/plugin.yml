@@ -9,5 +9,5 @@ commands:
     permission: ctf.create
     description: Start to create a CTF
   ctfstart:
-    permission: ctf.create
+    permission: ctf.start
     description: Start a CTF game
